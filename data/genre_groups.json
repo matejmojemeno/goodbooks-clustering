@@ -1,0 +1,42 @@
+{
+    "fiction": [
+        "fiction",
+        "contemporary",
+        "classics",
+        "chick-lit",
+        "romance",
+        "young-adult",
+        "historical-fiction"
+    ],
+    "speculative": [
+        "fantasy",
+        "science-fiction",
+        "paranormal",
+        "thriller",
+        "suspense",
+        "horror",
+        "mystery",
+        "crime"
+    ],
+    "non-fiction": [
+        "nonfiction",
+        "history",
+        "science",
+        "biography",
+        "memoir",
+        "philosophy",
+        "psychology",
+        "self-help",
+        "religion",
+        "spirituality",
+        "christian",
+        "business",
+        "travel"
+    ],
+    "graphic-and-visual": [
+        "graphic-novels",
+        "comics",
+        "art",
+        "manga"
+    ]
+}

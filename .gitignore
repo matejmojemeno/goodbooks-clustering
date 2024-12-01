@@ -1,4 +1,6 @@
 # gitignore
 
 .DS_Store
-./.idea/
+.idea/
+books_xml/
+goodbooks-10k/ratings.csv
