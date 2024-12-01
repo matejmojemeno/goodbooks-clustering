@@ -8,6 +8,41 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import normalize
 
 
+def genre_count(book_id, tag_id, book_tags):
+    row = book_tags[
+        (book_tags["goodreads_book_id"] == book_id) & (book_tags["tag_id"] == tag_id)
+    ]
+    return row["count"].values[0]
+
+
+def get_genres(genres_set):
+    return pd.read_csv("./goodbooks-10k/genres.csv")
+    books = pd.read_csv("./goodbooks-10k/books_enriched.csv")
+    tags = pd.read_csv("./goodbooks-10k/tags.csv")
+    book_tags = pd.read_csv("./goodbooks-10k/book_tags.csv")
+
+    book_tags = book_tags.drop_duplicates(subset=["goodreads_book_id", "tag_id"])
+
+    df = pd.DataFrame()
+
+    for genre in genres_set:
+        print(f"Processing genre: {genre}")
+        tag_id = tags[tags["tag_name"] == genre]["tag_id"].values[0]
+        book_ids = book_tags[book_tags["tag_id"] == tag_id]["goodreads_book_id"].values
+        df[genre] = books["goodreads_book_id"].apply(
+            lambda x: genre_count(x, tag_id, book_tags) if x in book_ids else 0
+        )
+
+    for row in df.iterrows():
+        if sum(row[1]) == 0:
+            print(row[0])
+
+    df = pd.DataFrame(normalize(df), columns=df.columns)
+    # df["book_id"] = books["book_id"]
+    df.to_csv("./goodbooks-10k/genres.csv", index=False)
+    return df
+
+
 # Load and preprocess the data
 def load_and_preprocess(file_path, genre_threshold=0.01):
     books = pd.read_csv(file_path)
@@ -17,8 +52,7 @@ def load_and_preprocess(file_path, genre_threshold=0.01):
     genres_set = set()
     for genre in genres:
         genres_set.update(genre)
-    genres_set.remove("books")
-    genres_set.remove("fiction")
+    genres_set.discard({"books", "fiction", "humor-and-comedy", "gay-and-lesbian"})
 
     df = pd.DataFrame(
         {genre: books["genres"].apply(lambda x: genre in x) for genre in genres_set}
@@ -94,10 +128,10 @@ def assign_genres_to_clusters(data, genres_set, clusters, n_clusters):
         cluster_genre = []
         for cluster_id in range(1, n_clusters + 1):
             cluster = data[data["cluster"] == cluster_id]
-            cluster_genre.append(cluster[cluster[genre] > 0].shape[0])
+            cluster_genre.append(cluster[genre].sum())
 
         cluster_genres[np.argmax(cluster_genre) + 1].append(
-            (genre, np.sum(data[genre] > 0))
+            (genre, np.sum(data[genre]))
         )
 
     pprint(cluster_genres)
@@ -133,12 +167,17 @@ if __name__ == "__main__":
 
     # Step 1: Load and preprocess data
     df, books, genres_set = load_and_preprocess(file_path)
+    df = get_genres(genres_set)
+    df = df.drop(columns=["humor-and-comedy", "gay-and-lesbian"])
+
+    for genre in df.columns:
+        print(genre, df[df[genre] > 0][genre].mean())
 
     # Step 2: Perform hierarchical clustering
     linkage_matrix = linkage(df, method="ward")
 
     # Step 3: Automatically find the optimal number of clusters
-    max_clusters = 10
+    max_clusters = 15
     optimal_clusters = find_optimal_clusters(df, linkage_matrix, max_clusters)
     # optimal_clusters = 5
 
