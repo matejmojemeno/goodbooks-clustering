@@ -1,32 +1,32 @@
 {
-    "Young's": [
+    "Young Adult": [
         "paranormal",
         "young-adult",
         "romance"
     ],
-    "Visual": [
+    "Graphic Media": [
         "comics",
         "graphic-novels",
         "manga"
     ],
-    "Sci-fi": [
+    "Science and Fantasy": [
         "fantasy",
         "science-fiction"
     ],
-    "Women's": [
+    "Modern Fiction": [
         "chick-lit",
         "contemporary",
         "sports",
         "music"
     ],
-    "Classics": [
+    "Literary Classics": [
         "poetry",
         "classics"
     ],
-    "Historical-fiction": [
+    "Historical Fiction": [
         "historical-fiction"
     ],
-    "Detectives": [
+    "Mystery and Thrillers": [
         "horror",
         "suspense",
         "thriller",
