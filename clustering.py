@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.preprocessing import normalize
 
 
 def load_data() -> pd.DataFrame:
@@ -45,13 +46,15 @@ def preprocess_genres(books: pd.DataFrame) -> pd.DataFrame:
     books["genres"] = books["genres"].apply(lambda x: x.split("'")[1::2])
 
     for group in genre_groups:
-        books[group] = books["genres"].apply(
-            lambda x: len(set(x) & set(genre_groups[group])) > 0
+        books[group] = (
+            books["genres"]
+            .apply(lambda x: 1 if len(set(x) & set(genre_groups[group])) > 0 else 0)
+            .astype("float")
         )
-        print(books[group].value_counts())
     books.drop(columns=["genres"], inplace=True)
-
-    print(books[books["fiction"] == books["non-fiction"]].shape)
+    books.loc[:, genre_groups.keys()] = books.loc[:, genre_groups.keys()].apply(
+        lambda x: x / x.sum(), axis=1
+    )
 
     return books
 
@@ -61,7 +64,8 @@ def main():
     books = filter_non_english(books)
     books = preprocess_genres(books)
 
-    print(books.head())
+    genre_groups = json.load(open("./data/genre_groups.json"))
+    print(books.loc[:, genre_groups.keys()].head())
 
 
 if __name__ == "__main__":

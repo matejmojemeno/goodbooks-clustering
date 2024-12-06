@@ -1,42 +1,52 @@
 {
-    "fiction": [
-        "fiction",
-        "contemporary",
-        "classics",
-        "chick-lit",
-        "romance",
+    "Young's": [
+        "paranormal",
         "young-adult",
+        "romance"
+    ],
+    "Visual": [
+        "comics",
+        "graphic-novels",
+        "manga"
+    ],
+    "Sci-fi": [
+        "fantasy",
+        "science-fiction"
+    ],
+    "Women's": [
+        "chick-lit",
+        "contemporary",
+        "sports",
+        "music"
+    ],
+    "Classics": [
+        "poetry",
+        "classics"
+    ],
+    "Historical-fiction": [
         "historical-fiction"
     ],
-    "speculative": [
-        "fantasy",
-        "science-fiction",
-        "paranormal",
-        "thriller",
-        "suspense",
+    "Detectives": [
         "horror",
+        "suspense",
+        "thriller",
         "mystery",
         "crime"
     ],
-    "non-fiction": [
-        "nonfiction",
-        "history",
-        "science",
-        "biography",
-        "memoir",
-        "philosophy",
-        "psychology",
+    "Nonfiction": [
         "self-help",
-        "religion",
-        "spirituality",
-        "christian",
         "business",
-        "travel"
-    ],
-    "graphic-and-visual": [
-        "graphic-novels",
-        "comics",
+        "biography",
         "art",
-        "manga"
+        "psychology",
+        "memoir",
+        "spirituality",
+        "science",
+        "travel",
+        "religion",
+        "history",
+        "nonfiction",
+        "philosophy",
+        "christian"
     ]
 }

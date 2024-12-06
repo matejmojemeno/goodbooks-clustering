@@ -1,46 +1,13 @@
+import json
 from pprint import pprint
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
+from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import normalize
-
-
-def genre_count(book_id, tag_id, book_tags):
-    row = book_tags[
-        (book_tags["goodreads_book_id"] == book_id) & (book_tags["tag_id"] == tag_id)
-    ]
-    return row["count"].values[0]
-
-
-def get_genres(genres_set):
-    return pd.read_csv("./goodbooks-10k/genres.csv")
-    books = pd.read_csv("./goodbooks-10k/books_enriched.csv")
-    tags = pd.read_csv("./goodbooks-10k/tags.csv")
-    book_tags = pd.read_csv("./goodbooks-10k/book_tags.csv")
-
-    book_tags = book_tags.drop_duplicates(subset=["goodreads_book_id", "tag_id"])
-
-    df = pd.DataFrame()
-
-    for genre in genres_set:
-        print(f"Processing genre: {genre}")
-        tag_id = tags[tags["tag_name"] == genre]["tag_id"].values[0]
-        book_ids = book_tags[book_tags["tag_id"] == tag_id]["goodreads_book_id"].values
-        df[genre] = books["goodreads_book_id"].apply(
-            lambda x: genre_count(x, tag_id, book_tags) if x in book_ids else 0
-        )
-
-    for row in df.iterrows():
-        if sum(row[1]) == 0:
-            print(row[0])
-
-    df = pd.DataFrame(normalize(df), columns=df.columns)
-    # df["book_id"] = books["book_id"]
-    df.to_csv("./goodbooks-10k/genres.csv", index=False)
-    return df
 
 
 # Load and preprocess the data
@@ -52,10 +19,14 @@ def load_and_preprocess(file_path, genre_threshold=0.01):
     genres_set = set()
     for genre in genres:
         genres_set.update(genre)
-    genres_set.discard({"books", "fiction", "humor-and-comedy", "gay-and-lesbian"})
+    genres_set -= {"fiction", "books"}
+    print(len(genres_set))
 
     df = pd.DataFrame(
-        {genre: books["genres"].apply(lambda x: genre in x) for genre in genres_set}
+        {
+            genre: books["genres"].apply(lambda x: f"'{genre}'" in x)
+            for genre in genres_set
+        }
     )
 
     # Remove rare genres based on threshold
@@ -75,6 +46,10 @@ def perform_clustering(data, method="ward", num_clusters=7):
     # Assign clusters
     clusters = fcluster(linkage_matrix, t=num_clusters, criterion="maxclust")
     return clusters, linkage_matrix
+
+    # kmeans = KMeans(n_clusters=num_clusters, random_state=1)
+    # clusters = kmeans.fit_predict(data)
+    # return clusters, None
 
 
 # Automatically find the optimal number of clusters
@@ -120,7 +95,7 @@ def analyze_clusters(data, genres_set, clusters, n_clusters):
             curr_genres[max_genre_index] = -1
 
 
-def assign_genres_to_clusters(data, genres_set, clusters, n_clusters):
+def assign_genres_to_clusters(data, clusters, n_clusters):
     data["cluster"] = clusters
 
     cluster_genres = {i: [] for i in range(1, n_clusters + 1)}
@@ -131,16 +106,18 @@ def assign_genres_to_clusters(data, genres_set, clusters, n_clusters):
             cluster_genre.append(cluster[genre].sum())
 
         cluster_genres[np.argmax(cluster_genre) + 1].append(
-            (genre, np.sum(data[genre]))
+            (genre, np.sum(data[genre]), np.sum(data[genre] > 0))
         )
 
     pprint(cluster_genres)
 
     for i in range(1, n_clusters + 1):
         book_set = set()
-        for genre, _ in cluster_genres[i]:
+        for genre, _, _ in cluster_genres[i]:
             book_set.update(set(data[data[genre] > 0].index))
         print(f"Cluster {i}: {len(book_set)} books")
+
+    return cluster_genres
 
 
 # Visualize clusters in 2D
@@ -167,27 +144,29 @@ if __name__ == "__main__":
 
     # Step 1: Load and preprocess data
     df, books, genres_set = load_and_preprocess(file_path)
-    df = get_genres(genres_set)
-    df = df.drop(columns=["humor-and-comedy", "gay-and-lesbian"])
-
-    for genre in df.columns:
-        print(genre, df[df[genre] > 0][genre].mean())
-
     # Step 2: Perform hierarchical clustering
     linkage_matrix = linkage(df, method="ward")
 
     # Step 3: Automatically find the optimal number of clusters
-    max_clusters = 15
+    max_clusters = 10
     optimal_clusters = find_optimal_clusters(df, linkage_matrix, max_clusters)
-    # optimal_clusters = 5
+    # optimal_clusters = 8
 
     # Step 4: Perform clustering with the optimal number of clusters
     clusters, _ = perform_clustering(df, num_clusters=optimal_clusters)
 
     # Step 5: Analyze clusters
     analyze_clusters(df.copy(), genres_set, clusters, optimal_clusters)
-    assign_genres_to_clusters(df.copy(), genres_set, clusters, optimal_clusters)
+    groups = assign_genres_to_clusters(df.copy(), clusters, optimal_clusters)
+
+    for group in groups:
+        genres = []
+        for genre, _, _ in groups[group]:
+            genres.append(genre)
+        groups[group] = genres
+
+    json.dump(groups, open("data/genre_clusters.json", "w"))
 
     # # Step 6: Visualize clusters
     # visualize_clusters(df, clusters, method="pca")
-    visualize_clusters(df, clusters, method="tsne")
+    # visualize_clusters(df, clusters, method="tsne")
