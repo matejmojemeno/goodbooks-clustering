@@ -7,8 +7,8 @@ def clean_description(books):
     books.to_csv("./data/books.csv", index=False)
 
 
-def clean_genres(books, genres):
-    split_genres(books, genres)
+def clean_genres(books):
+    books = split_genres(books)
     books.to_csv("./data/books.csv", index=False)
 
 
