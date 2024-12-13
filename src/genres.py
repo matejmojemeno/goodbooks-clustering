@@ -91,6 +91,5 @@ def split_genres(books) -> pd.DataFrame:
 
         for genre in genres:
             if genre in curr_tags[:15]:
-                books.at[row, genre] = np.int32(1)
-
+                books.loc[books["goodreads_book_id"] == row, genre] = np.int32(1)
     return books

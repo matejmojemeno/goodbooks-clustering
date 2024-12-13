@@ -1,0 +1,222 @@
+\documentclass{beamer}
+\usetheme{CambridgeUS}
+\usepackage{graphicx,subcaption,lipsum}
+% hide bottom navigation bar
+\beamertemplatenavigationsymbolsempty
+% Define names and their abbreviated versions
+\newcommand\FirstName{Matej}
+\newcommand\LastName{Kulháň}
+
+%Information to be included in the title page:
+\title{The Goodbooks Dtaset Clustering}
+\author[\FirstName \space \LastName]
+{\FirstName{} \LastName}
+
+\begin{document}
+
+\frame{\titlepage}
+
+% \AtBeginSection[]
+% {
+%   \begin{frame}
+%     \frametitle{Table of Contents}
+%     \tableofcontents[currentsection]
+%   \end{frame}
+% }
+
+\section{Data Preparation}
+\begin{frame}{Dataset Overview}
+    \begin{itemize}
+        \item \textbf{Original Dataset}:
+            \begin{itemize}
+                \item \texttt{books.csv}
+                \item \texttt{tags.csv}
+                \item \texttt{book\_tags.csv}
+            \end{itemize}
+        \item \textbf{Extended Dataset}:
+            \begin{itemize}
+                \item \texttt{books\_enriched.csv}.
+                \item Additional features:
+                \begin{itemize}
+                    \item Book descriptions
+                    \item Pages
+                \end{itemize}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Data Preprocessing}
+    \begin{itemize}
+        \item \textbf{Genre Extraction}:
+            \begin{itemize}
+                \item Extracted the most frequent tags.
+                \item Identified tags that corresponded to actual genres.
+                \item Assigned a genre to books with the tag in their top 10 tags.
+                \item Final list of genres:
+                    \begin{itemize}
+                        \item \texttt{young-adult}, \texttt{fantasy}, \texttt{nonfiction}, \texttt{romance},
+                              \texttt{adult}, \texttt{science-fiction}, \texttt{contemporary},
+                              \texttt{mystery}, \texttt{classics}, \texttt{historical-fiction}.
+                    \end{itemize}
+            \end{itemize}
+        \item \textbf{Description Cleaning}:
+            \begin{itemize}
+                \item Cleaned \texttt{description} column for NLP tasks:
+                    \begin{itemize}
+                        \item Removed special characters, stopwords, etc.
+                        \item Removed common entities like names, locations, etc.
+                        \item Lemmatized the text.
+                    \end{itemize}
+                \item Filtered out non-English books.
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\section{Clustering}
+\begin{frame}{Distance Matrix}
+    \begin{itemize}
+        \item \textbf{Handling Mixed Data Types}: 
+            \begin{itemize}
+                \item Used the \texttt{Gower} distance, which is specifically designed to handle datasets with a mix of numerical and categorical features.
+                \item Allows for fair comparison across different feature types without needing to normalize all variables to the same scale.
+            \end{itemize}
+        \item \textbf{Features Used}:
+            \begin{itemize}
+                \item \textbf{Numerical Features}:
+                    \begin{itemize}
+                        \item \texttt{average\_rating}
+                        \item \texttt{original\_publication\_year}
+                        \item \texttt{pages}
+                        \item \texttt{ratings\_count}
+                        \item \texttt{genre\_count}
+                    \end{itemize}
+                \item \textbf{Binary Features}:
+                    \begin{itemize}
+                        \item \texttt{genres}
+                    \end{itemize}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Clustering}
+    \begin{itemize}
+        \item \textbf{K-Medoids Clustering}:
+            \begin{itemize}
+                \item Used the \texttt{K-Medoids} algorithm.
+                \item Chose the number of clusters to be 12 based on a combination of the \texttt{elbow method} and human evaluation.
+            \end{itemize}
+    \end{itemize}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.47\textwidth]{../output/elbow_method_0.png}
+        \caption{Elbow Method}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Cluster Examples}
+\begin{table}[]
+\centering
+\begin{tabular}{|c|c|c|p{6cm}|}
+\hline
+\textbf{Nonfic.} & \textbf{Fantasy} & \textbf{Pub. Year} & \textbf{Cluster Description} \\ \hline
+0.01                & 0.07             & 1911                  & American literary classics about the pioneer lifestyle.     \\ \hline
+0.00                & 0.81             & 1993                  & Science fiction about space exploration and intergalactic conflicts. \\ \hline
+1.00                & 0.00             & 1985                  & Nonfiction books about leadership growth and personal development. \\ \hline
+0.07                & 0.08             & 1850                  & Mystery books with a focus on crime investigation and characters. \\ \hline
+\end{tabular}
+\caption{Examples of clusters with selected columns and rounded data.}
+\end{table}
+\end{frame}
+
+\section{Clustering With Text Embeddings}
+    \begin{frame}{Text Embeddings}
+        \begin{itemize}
+            \item \textbf{Adding Semantic Context}:
+                \begin{itemize}
+                    \item Used text embeddings to capture the nuanced meaning of book descriptions.
+                    \item Helped differentiate books within broad genres (e.g., various types of nonfiction).
+                \end{itemize}
+            \item \textbf{SBERT Embeddings}:
+                \begin{itemize}
+                    \item Used the \texttt{Sentence-BERT} model to generate embeddings.
+                    \item Calculated the distance matrix using the \texttt{cosine} distance.
+                    \item Combined the Gower distance matrix (from numerical and binary features) with the distance matrix derived from text embeddings using a weighted sum approach.
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Clustering}
+    \begin{itemize}
+        \item \textbf{K-Medoids Clustering}:
+            \begin{itemize}
+                \item Used the \texttt{K-Medoids} algorithm.
+                \item Chose the number of cluster to be \texttt{14} based on a combination of the \texttt{elbow method} and human evaluation.
+            \end{itemize}
+    \end{itemize}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.47\textwidth]{../output/elbow_method_0.5.png}
+        \caption{Elbow Method}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Cluster Examples}
+\begin{table}[]
+\centering
+\begin{tabular}{|c|c|c|p{6cm}|}
+\hline
+\textbf{Nonfic.} & \textbf{Fantasy} & \textbf{Pub. Year} & \textbf{Cluster Description} \\ \hline
+0.92                & 0.03             & 1972                  & Inspirational nonfiction about personal faith and spiritual growth.     \\ \hline
+0.00                & 0.71             & 1992                  & Science fiction about space exploration and technological anomalies. \\ \hline
+0.96                & 0.00             & 1977                  & Intellectual nonfiction on leadership and personal development. \\ \hline
+0.03                & 0.05             & 1985                  & Whimsical children's stories with humorous and relatable protagonists. \\ \hline
+\end{tabular}
+\caption{Examples of clusters with selected columns and rounded data.}
+\end{table}
+\end{frame}
+
+\section{Naming the Clusters}
+\begin{frame}{Cluster Naming Process}
+    \begin{itemize}
+        \item \textbf{Extracting Keywords:}
+            \begin{itemize}
+                \item Used the \texttt{Tf-Idf} algorithm to identify the most relevant keywords from book descriptions.
+            \end{itemize}
+        \item \textbf{Generating Cluster Names:}
+            \begin{itemize}
+                \item Used a pre-trained \texttt{Large Language Model (LLM)} for generating descriptive and human-readable cluster names.
+                \item The model was instructed to focus on conciseness and relevance based on extracted keywords.
+            \end{itemize}
+        \item \textbf{Example}:
+            \begin{itemize}
+                \item Keywords: space, galaxy, aliens, technology
+                \item Generated Name: \texttt{Science fiction about space exploration.}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\section{Future Work}
+\begin{frame}{Future Work}
+    \begin{itemize}
+        \item \textbf{Clustering}:
+            \begin{itemize}
+                \item Explore different clustering algorithms such as \texttt{HDBSCAN} and compare their performance.
+            \end{itemize}
+        \item \textbf{Evaluation}:
+            \begin{itemize}
+                \item Move beyond visual inspection by implementing systematic methods to evaluate cluster quality in a reproducible and scalable manner.
+            \end{itemize}
+        \item \textbf{Keyword Extraction}:
+            \begin{itemize}
+                \item Experiment with improved approaches for extracting meaningful keywords from book descriptions, such as:
+                    \begin{itemize}
+                        \item Rule-based techniques like \texttt{RAKE}.
+                        \item Leveraging the power of \texttt{Pre-trained LLMs}.
+                    \end{itemize}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\end{document}
+

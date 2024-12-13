@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Data Preparation}{2}{0}{1}
+\beamer@sectionintoc {2}{Clustering}{4}{0}{2}
+\beamer@sectionintoc {3}{Clustering With Text Embeddings}{7}{0}{3}
+\beamer@sectionintoc {4}{Naming the Clusters}{10}{0}{4}
+\beamer@sectionintoc {5}{Future Work}{11}{0}{5}
