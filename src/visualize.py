@@ -3,11 +3,11 @@ import umap
 from sklearn.manifold import TSNE
 
 
-def visualize_clusters_umap(books, distance_matrix):
-    umap_reducer = umap.UMAP(
-        n_neighbors=15, min_dist=0.1, metric="precomputed", random_state=42
-    )
-    umap_embedding = umap_reducer.fit_transform(distance_matrix)
+def visualize_clusters_umap(
+    books, distance_matrix, embeddings_weight, interactions_weight, save=False
+):
+    reducer = umap.UMAP(metric="precomputed", random_state=42)
+    umap_embedding = reducer.fit_transform(distance_matrix)
 
     books["cluster_size"] = books["cluster"].map(books["cluster"].value_counts())
 
@@ -24,12 +24,21 @@ def visualize_clusters_umap(books, distance_matrix):
             "keywords": True,
         },
         color_continuous_scale="Viridis",
-        title="UMAP Cluster Visualization",
     )
-    fig.show()
+    fig.update_layout(
+        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+    )
+    if save:
+        fig.write_html(
+            f"./output/umap_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+        )
+    else:
+        fig.show()
 
 
-def visualize_clusters(books, distance_matrix, embeddings_weight, save=False):
+def visualize_clusters(
+    books, distance_matrix, embeddings_weight, interactions_weight, save=False
+):
     tsne = TSNE(n_components=2, metric="precomputed", random_state=42, init="random")
     tsne_embedding = tsne.fit_transform(distance_matrix)
 
@@ -49,13 +58,20 @@ def visualize_clusters(books, distance_matrix, embeddings_weight, save=False):
         },
         color_continuous_scale="Viridis",
     )
+    fig.update_layout(
+        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+    )
     if save:
-        fig.write_html(f"./output/2d_cluster_{embeddings_weight}.html")
+        fig.write_html(
+            f"./output/cluster_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+        )
     else:
         fig.show()
 
 
-def visualize_clusters_3d(books, distance_matrix, embeddings_weight, save=False):
+def visualize_clusters_3d(
+    books, distance_matrix, embeddings_weight, interactions_weight, save=False
+):
     tsne = TSNE(n_components=3, metric="precomputed", random_state=42, init="random")
     tsne_embedding = tsne.fit_transform(distance_matrix)
 
@@ -76,8 +92,12 @@ def visualize_clusters_3d(books, distance_matrix, embeddings_weight, save=False)
         },
         color_continuous_scale="Viridis",
     )
-
+    fig.update_layout(
+        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+    )
     if save:
-        fig.write_html(f"./output/3d_cluster_{embeddings_weight}.html")
+        fig.write_html(
+            f"./output/cluster_3d_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+        )
     else:
         fig.show()

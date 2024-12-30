@@ -7,10 +7,10 @@ import numpy as np
 import pandas as pd
 from kmedoids import KMedoids
 from sentence_transformers import SentenceTransformer
-from sklearn.cluster import HDBSCAN
-from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import MinMaxScaler
+
+from .interactions import interactions
 
 
 def scale_numeric_data(books: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
@@ -20,11 +20,27 @@ def scale_numeric_data(books: pd.DataFrame, numeric_columns: list[str]) -> pd.Da
     return books[numeric_columns]
 
 
+def gower_distance_matrix(books: pd.DataFrame) -> np.ndarray:
+    if os.path.exists("./data/gower_distance_matrix.npy"):
+        return np.load("./data/gower_distance_matrix.npy")
+
+    books = books.drop(columns=["description_clean", "book_id"])
+    gower_matrix = gower.gower_matrix(books)
+
+    np.save("./data/gower_distance_matrix.npy", gower_matrix)
+    return gower_matrix
+
+
 def description_distances(descriptions):
+    if os.path.exists("./data/description_distances.npy"):
+        return np.load("./data/description_distances.npy")
+
     model = SentenceTransformer("all-MiniLM-L6-v2")
     embeddings = model.encode(descriptions, show_progress_bar=True)
     similarities = model.similarity(embeddings, embeddings)
     similarities = np.abs(similarities - 1) / 2
+
+    np.save("./data/description_distances.npy", similarities)
     return np.array(similarities)
 
 
@@ -33,17 +49,11 @@ def preprocess(books: pd.DataFrame) -> pd.DataFrame:
         "average_rating",
         "original_publication_year",
         "pages",
-        "ratings_count",
-        "genre_count",
     ]
     binary_columns: list[str] = json.load(open("./data/top_tags.json"))[:10]
 
-    books["description_words"] = books["description_clean"].apply(
-        lambda x: " ".join(list(set(x.split())))
-    )
-
     df = books.loc[
-        :, numeric_columns + binary_columns + ["description_clean", "description_words"]
+        :, numeric_columns + binary_columns + ["description_clean", "book_id"]
     ]
     df[numeric_columns] = scale_numeric_data(df, numeric_columns)
     df[binary_columns] = df.loc[:, binary_columns]
@@ -51,103 +61,49 @@ def preprocess(books: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def elbow_method(distance_matrix, n_clusters=10):
-    sum_of_squared_distances = []
-    K = range(1, 50)
-    for k in K:
-        model = KMedoids(
-            n_clusters=k,
-            metric="precomputed",
-            method="fasterpam",
-            random_state=42,
-            max_iter=1000,
-        )
-        model.fit(distance_matrix)
-        sum_of_squared_distances.append(model.inertia_)
-
-    plt.plot(K, sum_of_squared_distances, "bx-")
-    plt.xlabel("k")
-    plt.ylabel("Sum of squared distances")
-    plt.title("Elbow Method For Optimal k")
-    plt.axvline(x=n_clusters, color="r", linestyle="--")
-    plt.show()
-
-
-def find_optimal_clusters_silhouette(distance_matrix, max_clusters=10, min_clusters=2):
-    silhouette_scores = []
-    for n_clusters in range(min_clusters, max_clusters + 1):
-        model = KMedoids(
-            n_clusters=n_clusters,
-            metric="precomputed",
-            method="fasterpam",
-            random_state=42,
-            max_iter=1000,
-        )
-        labels = model.fit_predict(distance_matrix)
-        score = silhouette_score(distance_matrix, labels, metric="precomputed")
-        print(n_clusters, score)
-        silhouette_scores.append(score)
-
-    optimal_clusters = np.argmax(silhouette_scores) + 2  # +2 because range starts at 2
-    return int(optimal_clusters)
-
-
-def get_distance_matrix(df, descriptions, embeddings_weight=0.5):
-    file_name = f"./data/distance_matrix_{embeddings_weight:.2f}.npy"
+def get_distance_matrix(
+    df,
+    embeddings_weight=0.33,
+    interactions_weight=0.33,
+):
+    file_name = (
+        f"./data/distance_matrix_{embeddings_weight:.2f}_{interactions_weight:.2f}.npy"
+    )
     if os.path.exists(file_name):
         return np.load(file_name)
 
-    distance_matrix = gower.gower_matrix(df) * (1 - embeddings_weight)
-    assert abs(embeddings_weight) <= 1
-    if embeddings_weight == 0:
-        np.save(file_name, distance_matrix)
-        return distance_matrix
+    gower_matrix = gower_distance_matrix(df) * (
+        1 - embeddings_weight - interactions_weight
+    )
+    description_matrix = (
+        description_distances(df["description_clean"]) * embeddings_weight
+    )
+    interactions_matrix = interactions(df) * interactions_weight
 
-    distance_matrix += description_distances(descriptions) * embeddings_weight
+    distance_matrix = gower_matrix + description_matrix + interactions_matrix
     np.save(file_name, distance_matrix)
     return distance_matrix
 
 
-def cluster_kmedoids(
+def cluster(
     books,
-    n_clusters=None,
-    embeddings_weight=0.5,
-    max_clusters=10,
-    min_clusters=2,
+    embeddings_weight=0.33,
+    interactions_weight=0.33,
+    model=KMedoids(n_clusters=10, metric="precomputed", method="fasterpam"),
 ):
     preprocessed = preprocess(books)
     distance_matrix = get_distance_matrix(
-        preprocessed, books["description_clean"], embeddings_weight
+        preprocessed,
+        embeddings_weight,
+        interactions_weight,
     )
     print("Distance matrix calculated")
 
-    if n_clusters is None:
-        n_clusters = find_optimal_clusters_silhouette(
-            distance_matrix, max_clusters=max_clusters, min_clusters=min_clusters
-        )
+    books = books.drop(columns=["book_id"])
 
-    model = KMedoids(
-        n_clusters=n_clusters,
-        metric="precomputed",
-        method="fasterpam",
-        random_state=42,
-        max_iter=1000,
-    )
+    print("Calculating clusters")
     books["cluster"] = model.fit_predict(distance_matrix)
-    return books, distance_matrix
-
-
-def cluster_hdbscan(
-    books, min_samples=100, min_cluster_size=100, embeddings_weight=0.5
-):
-    preprocessed = preprocess(books)
-    distance_matrix = get_distance_matrix(
-        preprocessed, books["description_clean"], embeddings_weight
-    )
-    print("Distance matrix calculated")
-
-    model = HDBSCAN(
-        metric="precomputed", min_samples=min_samples, min_cluster_size=min_cluster_size
-    )
-    books["cluster"] = model.fit_predict(distance_matrix) + 2
+    print("Clusters calculated")
+    books["cluster"] += np.abs(books["cluster"].min())
+    books["cluster"] = books["cluster"].astype(np.uint8)
     return books, distance_matrix

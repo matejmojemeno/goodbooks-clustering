@@ -13,13 +13,11 @@ def clean_description(books):
 
 def clean_genres(books):
     books = split_genres(books)
-    books["genre_count"] = books["genres"].apply(lambda x: (len(x.split("'")) - 1) // 2)
     return books
 
 
 def remove_columns(books):
     to_remove = [
-        "book_id",
         "goodreads_book_id",
         "best_book_id",
         "work_id",
@@ -29,6 +27,7 @@ def remove_columns(books):
         "authors",
         "authors_2",
         "original_title",
+        "ratings_count",
         "language_code",
         "work_ratings_count",
         "work_text_reviews_count",

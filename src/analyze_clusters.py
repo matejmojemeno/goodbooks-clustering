@@ -1,7 +1,9 @@
 import pandas as pd
 
 
-def analyze_clusters(books, embeddings_weight=0):
+def analyze_clusters(
+    books, embeddings_weight: float = 0, interactions_weight: float = 0
+):
     print(books.columns)
     books = books.drop(
         columns=["title", "description_clean", "description_words"]
@@ -28,4 +30,6 @@ def analyze_clusters(books, embeddings_weight=0):
 
     cluster_analysis = pd.concat([numerical_means, non_numerical_features], axis=1)
     cluster_analysis = cluster_analysis.drop(columns=["cluster"])
-    cluster_analysis.to_csv(f"./output/cluster_analysis_{embeddings_weight}.csv")
+    cluster_analysis.to_csv(
+        f"./output/analysis_{embeddings_weight:.2f}_{interactions_weight:.2f}.csv"
+    )
