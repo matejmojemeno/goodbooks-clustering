@@ -2,10 +2,10 @@ pages:
   stage: deploy
   script:
     - mkdir .public
-    - cp output/umap_gower.html .public/
-    - cp output/umap_combined.html .public/
+    - cp output/*.html .public
+    - cp .public public
   artifacts:
     paths:
-      - .public
+      - public
   only:
     - main
