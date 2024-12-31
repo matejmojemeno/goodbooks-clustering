@@ -1,4 +1,4 @@
-# NI-MVI Semestral Work
+# The Goodbooks Dataset Clustering
 
 ## The assignment
 The "goodbooks" dataset contains six million ratings for the ten
@@ -13,17 +13,20 @@ clusters in a way that reflects their semantic content. We encourage
 creativity in this process and are not setting strict guidelines for
 clustering.
 
-## My approach
-I will use Sentence Transformers to encode both user interaction data and book
-metadata, creating a hybrid feature set for clustering. I will experiment with
-HDBSCAN and k-means to identify meaningful groups, reflecting patterns in user
-preferences and book characteristics. I will extract and analyze keywords from
-genres and descriptions within each group to generate labels.
+## Where to gather data
 
+The following files are needed from the `goodbooks-10k` dataset accessible on [GitHub](https://github.com/zygmuntz/goodbooks-10k):
+- `ratings.csv`
+- `tags.csv`
+- `book_tags.csv`
 
-### Read articles
+The file `books_enriched.csv` is needed from the `goodbooks-10k-extended` dataset accessible on [GitHub](https://github.com/malcolmosh/goodbooks-10k-extended)
+The files need to be placed in the `goodbooks-10k` directory in the root of the project.
 
-- [Sentence Transformers: Sentence Embeddings using BERT](https://arxiv.org/pdf/1908.10084v1)
-- [K-Means and Hierarchical clustering on the GoodReads dataset](https://medium.com/@pertchuhi_proshyan/k-means-and-hierarchical-clustering-on-the-goodreads-dataset-18c346e33566) 
-- [Short text clustering with Sentence Transformers](https://arxiv.org/abs/2102.00541)
-- [Improving the Performance of K-Means Clustering for High Dimensional Data Set](https://www.researchgate.net/profile/P-Prabhu/publication/278401467_Improving_Business_Intelligence_Based_on_Frequent_Itemsets_Using_k-Means_Clustering_Algorithm/links/5c4bf06692851c22a3911bbc/Improving-Business-Intelligence-Based-on-Frequent-Itemsets-Using-k-Means-Clustering-Algorithm.pdf)
+## How to run the code
+The project is a python project, and can be run by simply running the `main.py` file.
+The output of the project is a `csv` file containing the clusters and their labels, and an interactive `html` visualization of the clusters.
+
+[Without semantic content](output/umap_gower.html)
+
+[With semantic content](output/umap_combined.html)

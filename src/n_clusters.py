@@ -23,7 +23,7 @@ def elbow_method(distance_matrix, n_clusters=10):
     plt.ylabel("Sum of squared distances")
     plt.title("Elbow Method For Optimal k")
     plt.axvline(x=n_clusters, color="r", linestyle="--")
-    plt.show()
+    plt.savefig("./output/elbow_method.png")
 
 
 def find_optimal_clusters_silhouette(distance_matrix, max_clusters=10, min_clusters=2):

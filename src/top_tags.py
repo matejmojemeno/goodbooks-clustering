@@ -37,8 +37,8 @@ TO_REMOVE = [
 
 
 def get_top_tags(books, n_genres) -> list:
-    if os.path.exists("./data/top_tags.json"):
-        return json.load(open("./data/top_tags.json"))[:n_genres]
+    if os.path.exists("./cache/top_tags.json"):
+        return json.load(open("./cache/top_tags.json"))[:n_genres]
 
     book_tags = pd.read_csv("./goodbooks-10k/book_tags.csv")
     tags = pd.read_csv("./goodbooks-10k/tags.csv")
@@ -69,5 +69,5 @@ def get_top_tags(books, n_genres) -> list:
     top_tags = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:n_genres]
     top_tags = [tag for tag, _ in top_tags]
 
-    json.dump(top_tags, open("./data/top_tags.json", "w"))
+    json.dump(top_tags, open("./cache/top_tags.json", "w"))
     return top_tags

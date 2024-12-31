@@ -7,16 +7,19 @@ from .genres import split_genres
 
 
 def clean_description(books):
+    """Clean the description column for NLP processing."""
     books = get_cleaned_description(books)
     return books
 
 
 def clean_genres(books):
+    """Split the genres into multiple columns (one-hot encoding)."""
     books = split_genres(books)
     return books
 
 
 def remove_columns(books):
+    """Remove unnecessary columns from the dataset."""
     to_remove = [
         "goodreads_book_id",
         "best_book_id",
@@ -27,7 +30,6 @@ def remove_columns(books):
         "authors",
         "authors_2",
         "original_title",
-        "ratings_count",
         "language_code",
         "work_ratings_count",
         "work_text_reviews_count",
@@ -50,8 +52,9 @@ def remove_columns(books):
 
 
 def clean_dataset(books):
-    if os.path.exists("./data/books.csv"):
-        return pd.read_csv("./data/books.csv")
+    """Clean the dataset for clustering."""
+    if os.path.exists("./cache/books.csv"):
+        return pd.read_csv("./cache/books.csv")
 
     books = clean_description(books)
     books = clean_genres(books)
@@ -60,5 +63,5 @@ def clean_dataset(books):
     books["original_publication_year"] = books["original_publication_year"].fillna(
         books["original_publication_year"].median()
     )
-    books.to_csv("./data/books.csv", index=False)
+    books.to_csv("./cache/books.csv", index=False)
     return books

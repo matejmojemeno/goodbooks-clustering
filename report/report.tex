@@ -9,15 +9,13 @@
 %% >pdflatex report
 %% >pdflatex report
 
-\documentclass[czech]{mvi-report}
+\documentclass[english]{mvi-report}
 
-\usepackage[utf8]{inputenc} 
+\title{The Goodbooks Dataset Clustering}
 
-\title{Výstižný název vaší semestrální práce}
-
-\author{Jméno Příjmení}
+\author{Matej Kulháň}
 \affiliation{ČVUT - FIT}
-\email{username@fit.cvut.cz}
+\email{kulhama8@fit.cvut.cz}
 
 \def\file#1{{\tt#1}}
 
@@ -26,49 +24,140 @@
 \maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Úvod}
-Definice problému/úkolu, který práce řeší\ldots
+\section{Introduction}
+The \textbf{Goodbooks-10k} dataset \cite{zygmuntz_goodbooks10k} is a collection of the 10,000 most rated books from the Goodreads website. The dataset contains information about the books, such as the title, author, and rating. The goal of this project is to cluster the books in the dataset based on their content, such as the rating, publication year, etc. The clustering will be done using the \textbf{k-medoids} algorithm, which is a variation of the k-means algorithm. Lastly, a method to name each cluster based on the books that belong to it will be proposed.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Vstupní data}
-Původ, proces získání, předzpracování, \ldots
+\section{Data}
+\subsection{Data Description}
+The Goodbooks-10k dataset contains multiple files, of which the following are used in this project:
+\begin{itemize}
+    \item \textbf{books.csv} - Contains information about the books, such as the title, author, publication year, and rating.
+    \item \textbf{ratings.csv} - Contains information about the ratings of the books.
+    \item \textbf{tags.csv} - Contains information about the tags of the books.
+    \item \textbf{book\_tags.csv} - Contains information about the tags of the books.
+\end{itemize}
+
+In addition, there also exists an extended version of the dataset \cite{malcolmosh_goodbooks10k_extended} that contains additional information about the books, such as the \textbf{book description} and the \textbf{number of pages}. These additional features will be used in the clustering process.
+
+\subsection{Data Preprocessing}
+\subsubsection{Genres}
+
+The combination of the \textbf{tags.csv} and \textbf{book\_tags.csv} files is used to determine the genres of the books. Firstly, the most common tags are determined by counting the number of occurrences of each tag as one of the top tags for each book. From these tags, only the tags that represent genres are selected. The genres are then assigned to the books based on the tags that are associated with them. The genres follow the one-hot encoding scheme, where each genre is its own feature, and the value of the feature is 1 if the book belongs to the genre, and 0 otherwise. One book can belong to multiple genres.
+
+
+The following genres are used in this project: \textit{Young Adult, Fantasy, Nonfiction, Romance, Adult, Science Fiction, Contemporary, Mystery, Classics, Historical Fiction}.
+
+\subsubsection{Numerical Features}
+The numerical features of the books are extracted from the \textbf{books.csv} file. The features used in this project are the \textit{average rating, number of ratings, publication year and the number of pages}. All of these features are normalized.
+
+\subsubsection{Book Description}
+The book descriptions are a short summary of the book content. The descriptions are preprocessed by removing any special characters, numbers, and stopwords. Lemmatization is then applied to the descriptions to reduce the words to their base form.
+The language of each description is determined using the \textbf{langid} library. Only books with English descriptions are used in the clustering process. This removes approximately 250 books from the dataset.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Metody}
-Použité metody, jejich přizpůsobení, aplikace\ldots
+\section{Methodology}
+\subsection{Handling Mixed Data Types}
+The dataset contains both numerical and categorical data. This prevents the use of traditional clustering algorithms, such as k-means, which require numerical data. To handle this, the \textbf{Gower distance} \cite{tuerhong2014gower} is used, which is a distance metric that can handle mixed data types. This creates a distance matrix that can be used in the \textbf{k-medoids} \cite{park2009simple} algorithm.
+
+\subsubsection{Adding Additional Semantic Information}
+The numerical and categorical features aren't enough to accurately cluster the books. For example, the nonfiction genre contains a wide variety of books, such as biographies, self-help books, and cookbooks.
+
+To add additional semantic information to the clustering process, the \textbf{Sentence-BERT} \cite{reimers2019sentence} model is used to create embeddings of the book descriptions. From these embeddings, a similarity matrix is created, which is the cosine similarity between the embeddings of the book descriptions. This matrix is inverted to create a distance matrix, which is then combined with the Gower distance matrix.
+
+Another way to add semantic information is to use the \textbf{ratings.csv} file to determine the similarity between books based on the sets of users that rated each book. The \textbf{Jaccard similarity} is used to determine the similarity between the sets of users that rated each book. This similarity matrix is also inverted to create a distance matrix, and then combined with the Gower and Sentence-BERT distance matrices.
+
+This results in a combined distance matrix that contains the numerical, categorical, and semantic information of the books.
+
+\newpage
+\subsection{Clustering}
+
+The initial number of clusters is determined using the \textbf{elbow method} and later refined through human evaluation and visual inspection of the clusters projected into a 2D space using the \textbf{UMAP} algorithm.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\linewidth]{img/elbow_method.png}
+    \caption{Elbow Method}
+    \label{fig:elbow_method}
+\end{figure}
+
+The optimal number of clusters is determined to be 15, which is slightly higher than what the elbow method suggests. This is due to the complexity of the dataset and the need to capture the diversity of the books.
+
+The \textbf{k-medoids} algorithm is used to cluster the books. This algorithm is a variation of the k-means algorithm that allows for the use of a precomputed distance matrix. The algorithm is run with the distance matrix, and uses the \textbf{FasterPAM} algorithm to find the medoids of the clusters.
+
+\subsection{Naming the Clusters}
+\subsubsection{Keyword Extraction}
+To identify the thematic essence of each cluster, the descriptions of all books within a cluster are concatenated into a single document. From these documents, keywords are extracted using the \textbf{Tf-idf} algorithm, which highlights terms that are distinctive for the cluster relative to the entire dataset.
+
+\subsubsection{Cluster Metadata}
+The numerical and categorical features of the books within each cluster are aggregated to generate a comprehensive metadata profile. Key metadata elements include the most common genres, average rating, publication year, and number of pages. Genres are represented as continuous features ranging from 0 to 1, indicating the percentage of books in the cluster belonging to each genre. Other metadata features are normalized on a scale from 1 to 20, where higher values denote a stronger presence of a feature across clusters.
+
+\subsubsection{Cluster Naming Process}
+The extracted keywords and aggregated metadata are used to generate descriptive and concise names for the clusters. An external language model is tasked with naming the clusters, following specific guidelines to ensure meaningful, creative, and human-readable names. These guidelines emphasize thematic interpretation of keywords, integration of dominant genres, and creative use of metadata to reflect the unique characteristics of each cluster. Nonfiction clusters are explicitly labeled as such if nonfiction exceeds 50% in the metadata.
+
+\begin{itemize}
+    \item \textbf{Cluster Metadata:}
+        \begin{itemize}
+            \item \textit{Average Rating:} 13 (Above Average Rating)
+            \item \textit{Original Publication Year:} 12 (Slightly Newer Books)
+            \item \textit{Pages:} 11 (Average Length)
+            \item \textit{Ratings Count:} 5 (Not The Most Popular)
+            \item \textit{Dominant Genres:}
+                \begin{itemize}
+                    \item Fantasy: 0.84
+                    \item Romance: 0.97
+                    \item Adult: 0.59
+                    \item Historical Fiction: 0.14
+                \end{itemize}
+        \end{itemize}
+    \item \textbf{Keywords:} kresley, vamp, bridgerton, paranormal, brotherhood, fae, anita, crawfield, shapeshifter, year vampire
+    \item \textbf{Generated Cluster Name:}
+\textit{Vampire Lore and Fae Mythology: Dark Romantic Fantasies}
+\end{itemize}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- VYSLEDKY
-\section{Výsledky}
+\section{Results}
+\subsection{Without Semantic Information}
+The clustering without the use of semantic information results in clusters, that are almost entirely based on the genres of the books. This results in clusters that are too broad and don't capture the diversity of the books.
 
-Jakých výsledků bylo dosaženo, co na ně melo vliv. Srovnání s očekáváním, \emph{diskuze nad výsledky} -- zvláště důležitá v případě, že něco vyšlo \emph{divně}.
-
-\begin{figure}[h]
-  \centering\leavevmode
-  \includegraphics[width=.45\linewidth]{img/fit-logo-cz.pdf}\vskip-0.5cm
-  \caption{Vliv parametru \emph{Y}}
-  \label{fig:par-y}
-\end{figure}
-\begin{figure}[h]
-  \centering\leavevmode
-  \includegraphics[width=.45\linewidth]{img/fit-logo-en.pdf}\vskip-0.5cm
-  \caption{Vliv parametru \emph{X}}
-  \label{fig:par-x}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/gower.png}
+    \caption{Clustering Without Semantic Information}
+    \label{fig:without_semantic}
 \end{figure}
 
-Jak je z ilustrací \ref{fig:par-y} a \ref{fig:par-x} patrné, není to totéž, protože\ldots
+As seen in Figure \ref{fig:without_semantic}, there are a few big clusters that contain the most popular combinations of genres, and noise that contains the rest of the books. This is due to the lack of semantic information.
+There is only one cluster that contains nonfiction books. The cluster name is \textit{Autobiographical Insights of Leadership and Personal Growth Through Candid Reflections}.
 
+\newpage
+\subsection{With Semantic Information}
+The clustering with the use of semantic information results in clusters that are more diverse and capture the essence of the books.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{img/combined.png}
+    \caption{Clustering With Semantic Information}
+    \label{fig:with_semantic}
+\end{figure}
+
+As seen in Figure \ref{fig:with_semantic}, the clusters are more evenly distributed and contain a variety of genres and themes. The clusters are more diverse and capture the essence of the books. There are also two different clusters that contain nonfiction books, which is a significant improvement over the clustering without semantic information. The cluster names are:
+
+\begin{itemize}
+    \item \textit{Cluster 1:} \textit{Business Insights of a Visionary Life}
+    \item \textit{Cluster 2:} \textit{Inspirational Spiritual Journeys of Self-Discovery and Faith}
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- ZAVER
-\section{Závěr}
-K čemu to bylo/je dobré, jak to půjde využít dále, co by šlo ještě vylepšit\ldots 
+\section{Conclusion}
+The clustering of the Goodbooks-10k dataset was done using the k-medoids algorithm with the Gower distance matrix. The clustering was done with the use of semantic information, such as the book descriptions and the user interactions with the books. The clusters were named based on the keywords extracted from the book descriptions and the aggregated metadata of the books within each cluster. The results show that the use of semantic information improves the clustering and results in more diverse and meaningful clusters.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --- Bibliography
-\nocite{zizka}
-%\bibliographystyle{plain-cz-online}
 \bibliography{reference}
 
 \end{document}

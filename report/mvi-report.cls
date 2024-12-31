@@ -41,8 +41,9 @@
 \RequirePackage{lmodern}
 \RequirePackage{cmap}
 \usepackage[T1]{fontenc}
+\usepackage{float}
 %\usepackage{ae,aecompl} 
-\usepackage[left=15mm,right=15mm,top=18mm,bottom=20mm,footskip=10mm]{geometry}
+\usepackage[left=20mm,right=20mm,top=18mm,bottom=20mm,footskip=10mm]{geometry}
 \ifpdf
   \RequirePackage[pdftex]{graphicx}
   \RequirePackage[pdftex]{color}
@@ -69,12 +70,10 @@
   \expandafter\date\expandafter{\expandafter\affiliationFont\@date}%
 }
 
-\let\maketitleOrig=\maketitle
-\def\maketitle{\@ifnextchar[{\domaketitle}{\domaketitle[]}}
 \def\domaketitle[#1]{%
-  \twocolumn[\vskip-2.0cm\maketitleOrig\begin{quotation}#1\end{quotation}\vskip-1.0cm]%
+  \maketitleOrig
+  \begin{quotation}#1\end{quotation}%
 }
-%\bigskip
 
 % pokus o usetreni mista v \paragraph
 \let\paragraphOrig=\paragraph

@@ -1,9 +1,28 @@
 \begin{thebibliography}{1}
 
-\bibitem{zizka}
-Jan {\v Z}i{\v z}ka.
-\newblock Some interesting source.
-\newblock online, 1415.
-\newblock [cit.~2018--10--11] \url{http://zizka.trocnov/husiti/conspiration.pdf}.
+\bibitem{park2009simple}
+Hae-Sang Park and Chi-Hyuck Jun.
+\newblock A simple and fast algorithm for k-medoids clustering.
+\newblock {\em Expert systems with applications}, 36(2):3336--3341, 2009.
+
+\bibitem{reimers2019sentence}
+N~Reimers.
+\newblock Sentence-bert: Sentence embeddings using siamese bert-networks.
+\newblock {\em arXiv preprint arXiv:1908.10084}, 2019.
+
+\bibitem{malcolmosh_goodbooks10k_extended}
+Olivier Simard-Hanley.
+\newblock goodbooks-10k-extended: An extended dataset for book recommendations, 2017.
+\newblock GitHub repository, accessed December 31, 2024.
+
+\bibitem{tuerhong2014gower}
+Gulanbaier Tuerhong and Seoung~Bum Kim.
+\newblock Gower distance-based multivariate control charts for a mixture of continuous and categorical variables.
+\newblock {\em Expert systems with applications}, 41(4):1701--1707, 2014.
+
+\bibitem{zygmuntz_goodbooks10k}
+Zygmunt Zając.
+\newblock goodbooks-10k: A dataset for book recommendations, 2017.
+\newblock GitHub repository, accessed December 31, 2024.
 
 \end{thebibliography}

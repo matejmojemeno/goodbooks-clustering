@@ -1,10 +1,11 @@
+import matplotlib.pyplot as plt
 import plotly.express as px
 import umap
 from sklearn.manifold import TSNE
 
 
 def visualize_clusters_umap(
-    books, distance_matrix, embeddings_weight, interactions_weight, save=False
+    books, distance_matrix, gower, embeddings, interact, save=False
 ):
     reducer = umap.UMAP(metric="precomputed", random_state=42)
     umap_embedding = reducer.fit_transform(distance_matrix)
@@ -26,19 +27,17 @@ def visualize_clusters_umap(
         color_continuous_scale="Viridis",
     )
     fig.update_layout(
-        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+        title=f"Gower: {gower}, Embeddings: {embeddings}, Interactions: {interact}"
     )
     if save:
         fig.write_html(
-            f"./output/umap_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+            f"./output/umap_{int(gower)}_{int(embeddings)}_{int(interact)}.html"
         )
     else:
         fig.show()
 
 
-def visualize_clusters(
-    books, distance_matrix, embeddings_weight, interactions_weight, save=False
-):
+def visualize_clusters(books, distance_matrix, gower, embeddings, interact, save=False):
     tsne = TSNE(n_components=2, metric="precomputed", random_state=42, init="random")
     tsne_embedding = tsne.fit_transform(distance_matrix)
 
@@ -59,18 +58,18 @@ def visualize_clusters(
         color_continuous_scale="Viridis",
     )
     fig.update_layout(
-        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+        title=f"Gower: {gower}, Embeddings: {embeddings}, Interactions: {interact}"
     )
     if save:
         fig.write_html(
-            f"./output/cluster_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+            f"./output/cluster_{int(gower)}_{int(embeddings)}_{int(interact)}.html"
         )
     else:
         fig.show()
 
 
 def visualize_clusters_3d(
-    books, distance_matrix, embeddings_weight, interactions_weight, save=False
+    books, distance_matrix, gower, embeddings, interact, save=False
 ):
     tsne = TSNE(n_components=3, metric="precomputed", random_state=42, init="random")
     tsne_embedding = tsne.fit_transform(distance_matrix)
@@ -93,11 +92,11 @@ def visualize_clusters_3d(
         color_continuous_scale="Viridis",
     )
     fig.update_layout(
-        title=f"Embeddings: {embeddings_weight}, Interactions: {interactions_weight}"
+        title=f"Gower: {gower}, Embeddings: {embeddings}, Interactions: {interact}"
     )
     if save:
         fig.write_html(
-            f"./output/cluster_3d_{embeddings_weight:.2f}_{interactions_weight:.2f}.html"
+            f"./output/cluster_3d_{int(gower)}_{int(embeddings)}_{int(interact)}.html"
         )
     else:
         fig.show()

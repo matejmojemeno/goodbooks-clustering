@@ -81,29 +81,28 @@ def name_clusters(books):
                 "content": (
                     "You are a literary analyst tasked with naming a cluster of books using both keywords and numeric metadata. "
                     "Genres are represented as continuous features ranging from 0 to 1, indicating the percentage of books in the cluster that belong to that genre. "
-                    "Other metadata features range from 1 to 20, where 1 represents the lowest value and 20 the highest value for that feature across all clusters. "
-                    "Values close to 1 or 20 for non-genre features may also be significant, providing context for terms like 'minimalist,' 'short,' or 'modern.' "
-                    "Your response must be a descriptive, creative, and concise name for the cluster (6-10 words), summarizing its dominant themes or genres.\n\n"
+                    "Other metadata features range fro 1 to 20, where 1 represents the lowest value and 20 the highest value for that feature across all clusters. "
+                    "Your response must be a descriptive and concise name for the cluster (6-10 words), summarizing its dominant themes or genres.\n\n"
                     "### Guidelines:\n"
                     "- Focus on **themes, genres, and narratives** inferred from keywords and metadata.\n"
+                    "- Use simple, clear, and engaging language.\n"
                     "- Avoid starting responses with template phrases like:\n"
                     "  * 'Based on the keywords and metadata...'\n"
                     "  * 'The theme for this cluster appears to be...'\n"
                     "Instead, provide the cluster name directly.\n"
+                    "- If most of the books in the cluster are nonfiction (nonfiction is more than 0.5 in the metadata), include 'nonfiction' in the cluster name.\n"
+                    "- Do not use the word 'cluster' in the response.\n"
                     "- Avoid using the provided keywords verbatim in the cluster name unless they are extremely common (e.g., 'love,' 'magic,' 'war,' 'family'). Instead:\n"
                     "  * Interpret the keywords to convey their broader thematic or emotional resonance.\n"
-                    "  * Use synonyms, analogies, or thematic summaries to reflect the cluster’s essence.\n"
-                    "- When a keyword is common and unavoidable, integrate it seamlessly into a more creative or general context. For example:\n"
-                    "  * 'Love' -> 'Timeless Tales of Romantic Endeavors.'\n"
-                    "  * 'War' -> 'Epic Chronicles of Conflict and Survival.'\n"
+                    # "  * Use synonyms, analogies, or thematic summaries to reflect the cluster’s essence.\n"
+                    "- When a keyword is common and unavoidable, integrate it seamlessly into a more creative or general context.\n"
                     "- **Do not use specific names, job titles, or characters** in the cluster name. Generalize them into broader concepts.\n"
-                    "- Strive for creative and varied language; avoid repetitive structures like 'X and Y of Z.'\n"
+                    # "- Strive for creative and varied language; avoid repetitive structures like 'X and Y of Z.'\n"
                     "- Highlight genres with high percentages (e.g., 0.8 or above) as dominant themes.\n"
                     "- Interpret metadata features creatively:\n"
                     "  * Values near **20**: Use terms like 'modern,' 'detailed,' 'lengthy,' or 'complex.'\n"
                     "  * Values near **1**: Use terms like 'minimalist,' 'short,' or 'concise.'\n"
-                    "- For clusters with diverse or conflicting themes, use names like 'Eclectic Mix of Diverse Narratives.'\n"
-                    "- Avoid direct replication of keywords unless unavoidable."
+                    "- If a person, character name, job title or any other proper noun is present in the keywords, the cluster is not about them. They just happen to be mentioned in the text.\n"
                 ),
             },
             {
@@ -121,6 +120,8 @@ def name_clusters(books):
                 ),
             },
         ]
+
+        print(metadata_info)
 
         output = generator(messages, max_new_tokens=25, return_full_text=False)
         output = output[0]["generated_text"].split("\n")[0].strip()

@@ -7,3 +7,6 @@ goodbooks-10k/ratings.csv
 __pycache__/
 **/__pycache__/
 data/
+cache/
+presentation/
+report/
