@@ -3,7 +3,7 @@ pages:
   script:
     - mkdir .public
     - cp output/*.html .public
-    - cp .public public
+    - cp -r .public public
   artifacts:
     paths:
       - public
