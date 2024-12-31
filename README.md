@@ -27,6 +27,7 @@ The files need to be placed in the `goodbooks-10k` directory in the root of the 
 The project is a python project, and can be run by simply running the `main.py` file.
 The output of the project is a `csv` file containing the clusters and their labels, and an interactive `html` visualization of the clusters.
 
-[Without semantic content](output/umap_gower.html)
+## The Visualizations:
+- [Without semantic content](https://matejmojemeno.github.io/clustering_visualization/umap_gower.html)
 
-[With semantic content](output/umap_combined.html)
+- [With semantic content](https://matejmojemeno.github.io/clustering_visualization/umap_combined.html)
