@@ -1,0 +1,10 @@
+pages:
+  script:
+    - mkdir .public
+    - cp output/umap_gower.html .public/
+    - cp output/umap_combined.html .public/
+  artifacts:
+    paths:
+      - .public
+  only:
+    - main
