@@ -5,6 +5,7 @@ import pandas as pd
 
 
 def interactions(books: pd.DataFrame):
+    """Compute a distance matrix based on user interactions using the Jaccard similarity."""
     if os.path.exists("./data/interaction_matrix.npy"):
         return np.load("./data/interaction_matrix.npy")
 

@@ -12,6 +12,7 @@ from .interactions import interactions
 
 
 def scale_numeric_data(books: pd.DataFrame, numeric_columns: list[str]) -> pd.DataFrame:
+    """Scale numeric columns to the range [0, 1]."""
     scaler = MinMaxScaler()
     books = books.copy()
     books[numeric_columns] = scaler.fit_transform(books[numeric_columns])
@@ -19,6 +20,7 @@ def scale_numeric_data(books: pd.DataFrame, numeric_columns: list[str]) -> pd.Da
 
 
 def gower_distance_matrix(books: pd.DataFrame) -> np.ndarray:
+    """Compute the Gower distance matrix for the given DataFrame."""
     if os.path.exists("./cache/gower_distance_matrix.npy"):
         return np.load("./cache/gower_distance_matrix.npy")
 
@@ -30,6 +32,7 @@ def gower_distance_matrix(books: pd.DataFrame) -> np.ndarray:
 
 
 def description_distances(descriptions):
+    """Compute the distance matrix based on the descriptions of the books."""
     if os.path.exists("./cache/description_distances.npy"):
         return np.load("./cache/description_distances.npy")
 
@@ -43,6 +46,7 @@ def description_distances(descriptions):
 
 
 def preprocess(books: pd.DataFrame) -> pd.DataFrame:
+    """Preprocess the dataset for clustering."""
     numeric_columns: list[str] = [
         "average_rating",
         "original_publication_year",
@@ -67,12 +71,7 @@ def get_distance_matrix(
     embeddings=True,
     interact=True,
 ):
-    file_name = (
-        f"./cache/distance_matrix_{int(gower)}_{int(embeddings)}_{int(interact)}.npy"
-    )
-    # if os.path.exists(file_name):
-    #     return np.load(file_name)
-
+    """Compute the distance matrix based on the given parameters."""
     distance_matrix = np.ones((df.shape[0], df.shape[0]))
 
     if gower:
@@ -82,7 +81,6 @@ def get_distance_matrix(
     if interact:
         distance_matrix += interactions(df)
 
-    np.save(file_name, distance_matrix)
     return distance_matrix
 
 
@@ -93,6 +91,7 @@ def cluster(
     interact=True,
     model=KMedoids(n_clusters=10, metric="precomputed", method="fasterpam"),
 ):
+    """Cluster the books based on the given parameters."""
     preprocessed = preprocess(books)
     distance_matrix = get_distance_matrix(
         preprocessed,
@@ -101,8 +100,6 @@ def cluster(
         interact,
     )
     print("Distance matrix calculated")
-
-    # books = books.drop(columns=["book_id"])
 
     print("Calculating clusters")
     books["cluster"] = model.fit_predict(distance_matrix)

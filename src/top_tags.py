@@ -37,6 +37,7 @@ TO_REMOVE = [
 
 
 def get_top_tags(books, n_genres) -> list:
+    """Get the top n_genres tags from the dataset."""
     if os.path.exists("./cache/top_tags.json"):
         return json.load(open("./cache/top_tags.json"))[:n_genres]
 

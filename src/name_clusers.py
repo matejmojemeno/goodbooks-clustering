@@ -6,6 +6,7 @@ from .genres import get_genres
 
 
 def get_keywords(books, max_df=0.5):
+    """Extract keywords from book descriptions using TF-IDF."""
     grouped = books.groupby("cluster")["description_words"].apply(lambda x: " ".join(x))
 
     vectorizer = TfidfVectorizer(
@@ -30,6 +31,7 @@ def get_keywords(books, max_df=0.5):
 
 
 def get_info(books):
+    """Get metadata information for each cluster."""
     books = books.drop(["title", "description_clean", "description_words"], axis=1)
     clusters = books.groupby("cluster").mean()
 
@@ -52,6 +54,7 @@ def get_info(books):
 
 
 def name_clusters(books):
+    """Name each cluster based on keywords and metadata."""
     model_id = "meta-llama/Llama-3.2-3B-Instruct"
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForCausalLM.from_pretrained(
@@ -94,10 +97,8 @@ def name_clusters(books):
                     "- Do not use the word 'cluster' in the response.\n"
                     "- Avoid using the provided keywords verbatim in the cluster name unless they are extremely common (e.g., 'love,' 'magic,' 'war,' 'family'). Instead:\n"
                     "  * Interpret the keywords to convey their broader thematic or emotional resonance.\n"
-                    # "  * Use synonyms, analogies, or thematic summaries to reflect the cluster’s essence.\n"
                     "- When a keyword is common and unavoidable, integrate it seamlessly into a more creative or general context.\n"
                     "- **Do not use specific names, job titles, or characters** in the cluster name. Generalize them into broader concepts.\n"
-                    # "- Strive for creative and varied language; avoid repetitive structures like 'X and Y of Z.'\n"
                     "- Highlight genres with high percentages (e.g., 0.8 or above) as dominant themes.\n"
                     "- Interpret metadata features creatively:\n"
                     "  * Values near **20**: Use terms like 'modern,' 'detailed,' 'lengthy,' or 'complex.'\n"

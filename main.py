@@ -5,10 +5,7 @@ from src import (
     analyze_clusters,
     clean_dataset,
     cluster,
-    elbow_method,
     name_clusters,
-    visualize_clusters,
-    visualize_clusters_3d,
     visualize_clusters_umap,
 )
 
@@ -37,14 +34,6 @@ def main():
 
     analyze_clusters(books, gower, embeddings, interact)
 
-    visualize_clusters(
-        books,
-        distance_matrix,
-        gower,
-        embeddings,
-        interact,
-        save=True,
-    )
     visualize_clusters_umap(
         books,
         distance_matrix,
