@@ -1,0 +1,124 @@
+\documentclass{beamer}
+\usetheme{Boadilla}
+\usepackage{graphicx,subcaption,lipsum}
+% hide bottom navigation bar
+\beamertemplatenavigationsymbolsempty
+% Define names and their abbreviated versions
+\newcommand\FirstName{Matej}
+\newcommand\LastName{Kulháň}
+
+%Information to be included in the title page:
+\title{Clustering the Goodbooks-10k Dataset}
+\author[\FirstName \space \LastName]
+{\FirstName{} \LastName}
+
+\begin{document}
+
+\frame{\titlepage}
+
+
+\begin{frame}{Data}
+    \begin{itemize}
+        \item \textbf{Dataset}:
+            \begin{itemize}
+                \item \texttt{books\_enriched.csv}
+                \item \texttt{tags.csv}
+                \item \texttt{book\_tags.csv}
+                \item \texttt{ratings.csv}
+            \end{itemize}
+        \item \textbf{Data Preprocessing}:
+            \begin{itemize}
+                \item \texttt{Genre Extraction}
+                \item \texttt{Description Cleaning}
+                \item \texttt{Removing Non-English Books}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Distance Matrix}
+    \begin{itemize}
+        \item \textbf{Handling Mixed Data Types}:
+            \begin{itemize}
+                \item Calculated the distance matrix using the \texttt{Gower} distance
+            \end{itemize}
+        \item \textbf{Adding Text Embeddings}:
+            \begin{itemize}
+                \item Used \texttt{SBERT} embeddings to capture the semantic context of book descriptions
+                \item Created a distance matrix using the \texttt{cosine} distance
+            \end{itemize}
+        \item \textbf{Adding User Interactions}:
+            \begin{itemize}
+                \item Used the \texttt{ratings} dataset to capture user interactions with books
+                \item Created a distance matrix using the \texttt{Jaccard} distance for sets of user ratings
+            \end{itemize}
+        \item \textbf{Combining Distance Matrices}:
+            \begin{itemize}
+                \item Summed the distance matrices from numerical and binary features, text embeddings, and user interactions into a single distance matrix
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Clustering}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{itemize}
+                \item \textbf{K-Medoids Clustering}:
+                \begin{itemize}
+                    \item Chose the number of clusters to be 15
+                    \item Used the \texttt{K-Medoids} algorithm on the combined distance matrix
+                \end{itemize}
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            \includegraphics[width=.7\textwidth]{img/elbow_method.png}
+        \end{column}
+    \end{columns}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.75\textwidth]{img/combined.png}
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}{Cluster Naming Process}
+    \begin{itemize}
+        \item \textbf{Cluster Metadata}:
+            \begin{itemize}
+                \item Extracted keywords from book descriptions using \texttt{TF-IDF}
+                \item Used the cluster's mean values for numerical features and genre distributions
+            \end{itemize}
+        \item \textbf{Generating Cluster Names:}
+            \begin{itemize}
+                \item Used a pretrained \texttt{LLM} model to generate cluster names based on the extracted metadata
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Cluster Example}
+    \begin{itemize}
+        \item \textbf{Cluster Metadata:}
+            \begin{itemize}
+                \item \textit{Average Rating:} 13 (Above Average Rating)
+                \item \textit{Original Publication Year:} 12 (Slightly Newer Books)
+                \item \textit{Pages:} 11 (Average Length)
+                \item \textit{Ratings Count:} 5 (Not The Most Popular)
+                \item \textit{Dominant Genres:}
+                    \begin{itemize}
+                        \item Fantasy: 0.84
+                        \item Romance: 0.97
+                        \item Adult: 0.59
+                        \item Historical Fiction: 0.14
+                    \end{itemize}
+            \end{itemize}
+        \item \textbf{Keywords:} kresley, vamp, bridgerton, paranormal, brotherhood, fae, anita, crawfield, shapeshifter, year vampire
+        \item \textbf{Generated Cluster Name:}
+    \textit{Vampire Lore and Fae Mythology: Dark Romantic Fantasies}
+    \end{itemize}
+\end{frame}
+
+\end{document}
+
