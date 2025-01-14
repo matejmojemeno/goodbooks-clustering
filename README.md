@@ -28,6 +28,6 @@ The project is a python project, and can be run by simply running the `main.py` 
 The output of the project is a `csv` file containing the clusters and their labels, and an interactive `html` visualization of the clusters.
 
 ## The Visualizations:
-- [Without semantic content](https://matejmojemeno.github.io/clustering_visualization/umap_gower.html)
+- [Without semantic content](https://matejmojemeno.github.io/goodbooks-clustering/umap_gower.html)
 
-- [With semantic content](https://matejmojemeno.github.io/clustering_visualization/umap_combined.html)
+- [With semantic content](https://matejmojemeno.github.io/goodbooks-clustering/umap_combined.html)
